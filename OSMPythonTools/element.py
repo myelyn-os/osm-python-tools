@@ -8,19 +8,23 @@ import OSMPythonTools
 from OSMPythonTools.internal.singletonApi import SingletonApi
 from OSMPythonTools.internal.elementShallow import ElementShallow
 
+
 def _extendAndRaiseException(e, msg):
     msgComplete = str(e) + msg
     OSMPythonTools.logger.exception(msgComplete)
-    raise(Exception(msgComplete))
+    raise (Exception(msgComplete))
+
 
 class Element(ElementShallow):
-    def __init__(self, cacheMetadata=None, json=None, soup=None, soupHistory=None, shallow=False):
+    def __init__(
+        self, cacheMetadata=None, json=None, soup=None, soupHistory=None, shallow=False
+    ):
         self._json = json
         self._soup = soup
         self._soupHistory = soupHistory
         self._shallow = shallow
         super().__init__(cacheMetadata)
-    
+
     @staticmethod
     def fromId(idToParse):
         if isinstance(idToParse, Element):
@@ -28,29 +32,38 @@ class Element(ElementShallow):
         if isinstance(idToParse, ElementShallow):
             idToParse = idToParse.typeId()
         if idToParse is None:
-            Element._raiseException(None, 'Could not parse element. Please make sure that your node, way, or relation ID is formatted properly: \'node/***\', \'node ***\', \'n***\', \'way/***\', \'way ***\', \'w***\', or \'relation/***\', \'relation ***\', or \'r***\'')
+            Element._raiseException(
+                None,
+                "Could not parse element. Please make sure that your node, way, or relation ID is formatted properly: 'node/***', 'node ***', 'n***', 'way/***', 'way ***', 'w***', or 'relation/***', 'relation ***', or 'r***'",
+            )
         idToParse = idToParse.strip().lower()
         type = None
-        if idToParse[0].lower() == 'n':
-            type = 'node'
-        elif idToParse[0].lower() == 'w':
-            type = 'way'
-        elif idToParse[0].lower() == 'r':
-            type = 'relation'
+        if idToParse[0].lower() == "n":
+            type = "node"
+        elif idToParse[0].lower() == "w":
+            type = "way"
+        elif idToParse[0].lower() == "r":
+            type = "relation"
         else:
-            Element._raiseException(None, 'Could not parse element type. Please make sure that your node, way, or relation ID is formatted properly: \'node/***\', \'node ***\', \'n***\', \'way/***\', \'way ***\', \'w***\', or \'relation/***\', \'relation ***\', or \'r***\'')
-        idToParse = re.sub('[^0-9]', '', idToParse)
+            Element._raiseException(
+                None,
+                "Could not parse element type. Please make sure that your node, way, or relation ID is formatted properly: 'node/***', 'node ***', 'n***', 'way/***', 'way ***', 'w***', or 'relation/***', 'relation ***', or 'r***'",
+            )
+        idToParse = re.sub("[^0-9]", "", idToParse)
         if len(idToParse) > 0:
             id = int(idToParse)
         else:
-            Element._raiseException(None, 'Could not parse element ID. Please make sure that your node, way, or relation ID is formatted properly: \'node/***\', \'node ***\', \'n***\', \'way/***\', \'way ***\', \'w***\', or \'relation/***\', \'relation ***\', or \'r***\'')
-        return Element(json={'type': type, 'id': id}, shallow=True)
+            Element._raiseException(
+                None,
+                "Could not parse element ID. Please make sure that your node, way, or relation ID is formatted properly: 'node/***', 'node ***', 'n***', 'way/***', 'way ***', 'w***', or 'relation/***', 'relation ***', or 'r***'",
+            )
+        return Element(json={"type": type, "id": id}, shallow=True)
 
     def _raiseException(self, msg):
-        OSMPythonTools._raiseException('Element', msg)
+        OSMPythonTools._raiseException("Element", msg)
 
     def __getElement(self, prop):
-        if self._shallow and prop not in ['type', 'id']:
+        if self._shallow and prop not in ["type", "id"]:
             self._unshallow()
             self._shallow = False
         if self._json is not None:
@@ -58,61 +71,102 @@ class Element(ElementShallow):
         return self._soup[prop] if self._isValid and prop in self._soup.attrs else None
 
     def _unshallow(self):
-        raise(NotImplementedError('Subclass should implement _unshallow'))
+        raise (NotImplementedError("Subclass should implement _unshallow"))
 
     ### properties
     def type(self):
         if self._json is not None:
-            return self.__getElement('type')
+            return self.__getElement("type")
         return self._soup.name if self._isValid else None
+
     def id(self):
-        return int(self.__getElement('id'))
+        return int(self.__getElement("id"))
+
     def visible(self):
-        return self.__getElement('visible')
+        return self.__getElement("visible")
+
     def version(self):
-        return int(self.__getElement('version'))
+        return int(self.__getElement("version"))
+
     def changeset(self):
-        return self.__getElement('changeset')
+        return self.__getElement("changeset")
+
     def timestamp(self):
-        return dateutil.parser.isoparse(self.__getElement('timestamp'))
+        return dateutil.parser.isoparse(self.__getElement("timestamp"))
+
     def user(self):
-        return self.__getElement('user')
+        return self.__getElement("user")
+
     def uid(self):
-        return self.__getElement('uid')
+        return self.__getElement("uid")
+
     def userid(self):
-        return self.__getElement('uid')
+        return self.__getElement("uid")
+
     def lat(self):
-        return float(self.__getElement('lat')) if self.__getElement('lat') else None
+        return float(self.__getElement("lat")) if self.__getElement("lat") else None
+
     def lon(self):
-        return float(self.__getElement('lon')) if self.__getElement('lon') else None
-    def geometry(self):
-        return self.geometry()
+        return float(self.__getElement("lon")) if self.__getElement("lon") else None
+
     def centerLat(self):
-        return float(self.__getElement('center')['lat']) if self.__getElement('center') else None
+        return (
+            float(self.__getElement("center")["lat"])
+            if self.__getElement("center")
+            else None
+        )
+
     def centerLon(self):
-        return float(self.__getElement('center')['lon']) if self.__getElement('center') else None
+        return (
+            float(self.__getElement("center")["lon"])
+            if self.__getElement("center")
+            else None
+        )
 
     ### nodes
     def __nodes(self):
-        return self.__getElement('nodes') if self._json is not None else self._soup.find_all('nd')
+        return (
+            self.__getElement("nodes")
+            if self._json is not None
+            else self._soup.find_all("nd")
+        )
+
     def nodes(self, shallow=True):
         nodes = self.__nodes()
         if nodes is None or len(nodes) == 0:
             return []
         api = SingletonApi()
         if shallow:
-            return list(map(lambda n: api.query('node/' + str(n if self._json is not None else n['ref']), shallow='''
+            return list(
+                map(
+                    lambda n: api.query(
+                        "node/" + str(n if self._json is not None else n["ref"]),
+                        shallow='''
 <?xml version="1.0" encoding="UTF-8"?>
 <osm>
-    <node id="''' + str(n if self._json is not None else n['ref']) + '''"/>
+    <node id="'''
+                        + str(n if self._json is not None else n["ref"])
+                        + """"/>
 </osm>
-            '''), nodes))
+            """,
+                    ),
+                    nodes,
+                )
+            )
         else:
-            return list(map(lambda n: api.query('node/' + str(n if self._json is not None else n['ref'])), nodes))
+            return list(
+                map(
+                    lambda n: api.query(
+                        "node/" + str(n if self._json is not None else n["ref"])
+                    ),
+                    nodes,
+                )
+            )
+
     def countNodes(self):
         nodes = self.__nodes()
         return len(nodes) if nodes is not None else None
-    
+
     ### history
     def history(self):
         if self._soupHistory is None:
@@ -126,53 +180,97 @@ class Element(ElementShallow):
 
     ### members
     def __members(self, onlyInner=False, onlyOuter=False):
-        return [m for m in (self.__getElement('members') if self._json is not None else self._soup.find_all('member')) if (not onlyInner or m['role'] == 'inner') and (not onlyOuter or m['role'] == 'outer')]
+        return [
+            m
+            for m in (
+                self.__getElement("members")
+                if self._json is not None
+                else self._soup.find_all("member")
+            )
+            if (not onlyInner or m["role"] == "inner")
+            and (not onlyOuter or m["role"] == "outer")
+        ]
+
     def members(self, shallow=True, onlyInner=False, onlyOuter=False):
         members = self.__members(onlyInner=onlyInner, onlyOuter=onlyOuter)
         if members is None or len(members) == 0:
             return []
         api = SingletonApi()
         if shallow:
-            return list(map(lambda m: api.query(m['type'] + '/' + str(m['ref']) + '/full', shallow='''
+            return list(
+                map(
+                    lambda m: api.query(
+                        m["type"] + "/" + str(m["ref"]) + "/full",
+                        shallow="""
 <?xml version="1.0" encoding="UTF-8"?>
 <osm>
-    <''' + m['type'] + ''' id="''' + str(m['ref']) + '''"/>
+    <"""
+                        + m["type"]
+                        + ''' id="'''
+                        + str(m["ref"])
+                        + """"/>
 </osm>
-            '''), members))
+            """,
+                    ),
+                    members,
+                )
+            )
         else:
-            return list(map(lambda m: api.query(m['type'] + '/' + str(m['ref']) + '/full'), members))
+            return list(
+                map(
+                    lambda m: api.query(m["type"] + "/" + str(m["ref"]) + "/full"),
+                    members,
+                )
+            )
+
     def countMembers(self):
         members = self.__members()
         return len(members) if members is not None else None
-    
+
     ### tags
     def tags(self):
         if self._json is not None:
-            return self.__getElement('tags')
-        return dict(map(lambda t: (t['k'], t['v']), self._soup.find_all('tag') if self._isValid else []))
+            return self.__getElement("tags")
+        return dict(
+            map(
+                lambda t: (t["k"], t["v"]),
+                self._soup.find_all("tag") if self._isValid else [],
+            )
+        )
+
     def tag(self, key):
         tags = self.tags()
         return tags[key] if key in tags else None
 
     ### geometry
-    def geometry(self):
-        return self.__geometry()
-    def __geometry(self, asList=False):
+    def geometry(self, api):
+        return self.__geometry(api)
+
+    def __geometry(self, api, asList=False):
         try:
-            if self.type() == 'node':
+            if self.type() == "node":
                 if not self.lon() or not self.lat():
-                    self._raiseException('Cannot build geometry: geometry information not included.')
-                return [(self.lon(), self.lat())] if asList else geojson.Point((self.lon(), self.lat()))
-            elif self.type() == 'way':
-                if self.__getElement('geometry'):
-                    cs = self.__getElement('geometry')
+                    self._raiseException(
+                        "Cannot build geometry: geometry information not included."
+                    )
+                return (
+                    [(self.lon(), self.lat())]
+                    if asList
+                    else geojson.Point((self.lon(), self.lat()))
+                )
+            elif self.type() == "way":
+                if self.__getElement("geometry"):
+                    cs = self.__getElement("geometry")
                 else:
-                    api = OSMPythonTools.api.Api()
-                    d = api.query(self.type() + '/' + str(self.id()) + '/full')
-                    dSoup = BeautifulSoup(d._xml, 'xml')
-                    nodeIds = [n['ref'] for n in dSoup.find(self.type(), id=str(self.id())).children if n.name == 'nd']
-                    cs = [dSoup.osm.find('node', id=nId) for nId in nodeIds]
-                    cs = [{'lat': float(c['lat']), 'lon': float(c['lon'])} for c in cs]
+                    d = api.query(self.type() + "/" + str(self.id()) + "/full")
+                    dSoup = BeautifulSoup(d._xml, "xml")
+                    nodeIds = [
+                        n["ref"]
+                        for n in dSoup.find(self.type(), id=str(self.id())).children
+                        if n.name == "nd"
+                    ]
+                    cs = [dSoup.osm.find("node", id=nId) for nId in nodeIds]
+                    cs = [{"lat": float(c["lat"]), "lon": float(c["lon"])} for c in cs]
                 if asList:
                     return cs
                 cs = self.__geometry_csToList(cs)
@@ -180,10 +278,10 @@ class Element(ElementShallow):
                     return geojson.Polygon([cs])
                 else:
                     return geojson.LineString(cs)
-            elif self.type() == 'relation':
+            elif self.type() == "relation":
                 membersOuter = self.__geometry_extract(self.members(onlyOuter=True))
                 if len(membersOuter) == 0:
-                    self._raiseException('Cannot build geometry: no outer rings found.')
+                    self._raiseException("Cannot build geometry: no outer rings found.")
                 membersInner = self.__geometry_extract(self.members(onlyInner=True))
                 ringsOuter = self.__geometry_buildRings(membersOuter)
                 ringsInner = self.__geometry_buildRings(membersInner)
@@ -195,11 +293,13 @@ class Element(ElementShallow):
                 else:
                     return geojson.Polygon(polygons[0])
             else:
-                self._raiseException('Cannot build geometry: type of element unknown.')
+                self._raiseException("Cannot build geometry: type of element unknown.")
         except Exception as e:
-            _extendAndRaiseException(e, ' ({}/{})'.format(self.type(), self.id()))
+            _extendAndRaiseException(e, " ({}/{})".format(self.type(), self.id()))
+
     def __geometry_equal(self, x, y):
         return x[0] == y[0] and x[1] == y[1]
+
     def __geometry_pointInsidePolygon(self, p, polygon):
         x = p[0]
         y = p[1]
@@ -217,6 +317,7 @@ class Element(ElementShallow):
                             inside = not inside
             px, py = qx, qy
         return inside
+
     def __geometry_polygonPositiveOriented(self, polygon):
         signedArea = 0
         n = len(polygon)
@@ -226,17 +327,28 @@ class Element(ElementShallow):
             signedArea += px * qy - qx * py
         signedArea = signedArea / 2
         return signedArea > 0
+
     def __geometry_orientRings(self, rings, positive=True):
-        return [list(reversed(r)) if positive ^ self.__geometry_polygonPositiveOriented(r) else r for r in rings]
+        return [
+            list(reversed(r))
+            if positive ^ self.__geometry_polygonPositiveOriented(r)
+            else r
+            for r in rings
+        ]
+
     def __geometry_csToList(self, cs):
-        return [(c['lon'], c['lat']) for c in cs]
+        return [(c["lon"], c["lat"]) for c in cs]
+
     def __geometry_extract(self, members):
         extracted = []
         for m in members:
-            if m.type() == 'relation':
-                self._raiseException('Cannot build geometry: relation in relation not supported.')
+            if m.type() == "relation":
+                self._raiseException(
+                    "Cannot build geometry: relation in relation not supported."
+                )
             extracted.append(self.__geometry_csToList(m.__geometry(asList=True)))
         return extracted
+
     def __geometry_buildRings(self, members):
         rings = []
         r = []
@@ -259,12 +371,13 @@ class Element(ElementShallow):
                         del members[i]
                         break
                 if not found:
-                    self._raiseException('Cannot build geometry: cannot close ring.')
+                    self._raiseException("Cannot build geometry: cannot close ring.")
         if len(r) > 3 and self.__geometry_equal(r[0], r[-1]):
             rings.append(r)
         elif r:
-            self._raiseException('Cannot build geometry: cannot close ring.')
+            self._raiseException("Cannot build geometry: cannot close ring.")
         return rings
+
     def __geometry_buildPolygons(self, ringsOuter, ringsInner):
         polygons = []
         for r in ringsOuter:
@@ -282,5 +395,7 @@ class Element(ElementShallow):
             ringsInner = ringsInnerTodo
             polygons.append(polygon)
         if len(ringsInner) > 0:
-            self._raiseException('Cannot build geometry: cannot find outer ring for inner ring.')
+            self._raiseException(
+                "Cannot build geometry: cannot find outer ring for inner ring."
+            )
         return polygons
